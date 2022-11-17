@@ -6,20 +6,42 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 )
 
-var messageArg = flag.String("message", "", "")
+func getAllConcernedEnvPairs(prefixFilter string, trimPrefix bool) [][]string {
+	var envPairs [][]string
+	for _, envPair := range os.Environ() {
+		envTuple := strings.SplitN(envPair, "=", 2)
 
-func message() string {
-	msg := *messageArg
-	if msg == "" {
-		return os.Getenv("MESSAGE")
+		if strings.HasPrefix(envTuple[0], prefixFilter) {
+			if trimPrefix {
+				envTuple[0] = strings.Replace(envTuple[0], prefixFilter, "", 1)
+			}
+			envPairs = append(envPairs, envTuple)
+		}
 	}
-	return msg
+
+	return envPairs
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hi there, I love %s! %s", r.URL.Path[1:], message())
+	prefix := os.Getenv("PREFIX")
+	trimPrefix := false
+	if os.Getenv("TRIM") != "" {
+		trimPrefix = true
+	}
+	displayText := ""
+
+	if prefix != "" {
+		for _, envPair := range getAllConcernedEnvPairs(prefix, trimPrefix) {
+			displayText += fmt.Sprintf("%s : %s\n", envPair[0], envPair[1])
+		}
+	} else {
+		displayText += "`PREFIX` environment variable is not correctly configured"
+	}
+
+	fmt.Fprintf(w, displayText)
 }
 
 func main() {
