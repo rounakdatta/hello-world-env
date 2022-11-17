@@ -1,45 +1,41 @@
 ## hello-world-env
 
-A docker image for learning and testing with web apps and environment variables.
+A docker image for tinkering with environment variables. It will try print out all the environment variables that begin with a particular prefix. The `PREFIX` environment variable has been kept mandatory intentionally. Optionally one can also choose to trim the `PREFIX` while printing by setting the `TRIM` environment variable.
 
 ```
-bithavoc/hello-world-env
+rounakdatta/hello-world-env
 ```
 
-### Using with local docker
+### Using with environment variables (adding a prefix)
 
 ```
-docker run --publish=3000:3000 --rm bithavoc/hello-world-env
-```
-
-```
-GET http://localhost:3000/this
-```
-
-Prints
-
-```
-Hi there, I love this!
-```
-
-### Using with command arguments
-
-```
-docker run --publish=3000:3000 --rm bithavoc/hello-world-env /root/app -message "cool by arg"
-```
-
-### Using with environment variables
-
-```
-docker run --publish=3000:3000 --rm -e "MESSAGE=cool by env" bithavoc/hello-world-env
+docker run --publish=3000:3000 --rm -e PREFIX=FOXY_ -e FOXY_ALLCAPS=400 -e FOXY_sweet=6996 rounakdatta/hello-world-env
 ```
 
 ```
-GET http://localhost:3000/this
+GET http://localhost:3000
 ```
 
 Prints
 
 ```
-Hi there, I love this! cool
+FOXY_ALLCAPS : 400
+FOXY_sweet : 6996
+```
+
+### Using with environment variables (adding a prefix, but trimming out while printing)
+
+```
+docker run --publish=3000:3000 --rm -e TRIM=yes -e PREFIX=FOXY_ -e FOXY_ALLCAPS=400 -e FOXY_sweet=6996 rounakdatta/hello-world-env
+```
+
+```
+GET http://localhost:3000
+```
+
+Prints
+
+```
+ALLCAPS : 400
+sweet : 6996
 ```
