@@ -6,12 +6,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 )
 
 func getAllConcernedEnvPairs(prefixFilter string, trimPrefix bool) [][]string {
 	var envPairs [][]string
 	for _, envPair := range os.Environ() {
+		// the environment variables are fetched as plain strings such as `LANG=go`
 		envTuple := strings.SplitN(envPair, "=", 2)
 
 		if strings.HasPrefix(envTuple[0], prefixFilter) {
@@ -33,8 +35,14 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	displayText := ""
 
+	// we sort them based on the first element of the tuple i.e. the key
+	envPairs := getAllConcernedEnvPairs(prefix, trimPrefix)
+	sort.Slice(envPairs, func(i, j int) bool {
+		return envPairs[i][0] < envPairs[j][0]
+	})
+
 	if prefix != "" {
-		for _, envPair := range getAllConcernedEnvPairs(prefix, trimPrefix) {
+		for _, envPair := range envPairs {
 			displayText += fmt.Sprintf("%s : %s\n", envPair[0], envPair[1])
 		}
 	} else {
